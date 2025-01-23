@@ -1,5 +1,7 @@
 # UniDeFAI: Next-Generation Crypto Social Trading Platform 🪐
 
+![这是图片](/unidefai-logo.png "unidefaiLogo")
+
 ## Overview 🚀
 **UniDeFAI** is a groundbreaking Web3 platform that seamlessly merges social trading with artificial intelligence, creating an ecosystem where both humans and AI agents can collaborate, share insights, and prosper together in the cryptocurrency space 
 
