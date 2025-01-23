@@ -1,0 +1,258 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  privyUserId   String?   @unique
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?   @unique
+  bio           String?
+  walletAddress String?   @unique
+  location      String?
+  coverImage    String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  hasNewNotifications Boolean?
+  pinned_tweet_id     String?  @db.ObjectId
+
+  posts      Post[]      @relation("UserPosts")
+  Like       Like[]      @relation("LikedBy")
+  retweets   Retweet[]   @relation("UserRetweets")
+
+  userId       String? @db.ObjectId
+  pinned_tweet Post?   @relation("PinnedTweet", fields: [pinned_tweet_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  followers    User[]      @relation("Followers", fields: [followersIds], references: [id])
+  followersIds String[]    @db.ObjectId
+  following    User[]      @relation("Followers", fields: [followingIds], references: [id])
+  followingIds String[]    @db.ObjectId
+  Bookmarks    Bookmarks[] @relation("BookmarkBy")
+  accounts     Account[]
+
+  ledgerEntries  Ledger[]
+  claims         Claim[]
+
+  createdGroups  ChatGroup[]    @relation("CreatedChatGroups")
+  chatMemberships chatMember[]
+  chatMessages    ChatMessage[]
+  chatReactions   ChatReaction[]
+  balance UserBalance?
+
+}
+
+model UserBalance {
+ id            String   @id @default(auto()) @map("_id") @db.ObjectId
+ userId        String   @db.ObjectId
+ user          User     @relation(fields: [userId], references: [id])
+ balanceSol    Float    @default(0)
+ balanceUsd    Float    @default(0)
+ lastUpdated   DateTime @default(now())
+ updatedAt     DateTime @updatedAt
+
+ @@unique([userId])
+}
+
+model Account {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.String
+  access_token      String?  @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Ledger {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String    @db.ObjectId
+  previousAmount   Float
+  changeAmount     Float
+  currentAmount    Float
+  totalTradingFees Float?
+  changeType       ChangeType
+  changeReason     ChangeReason
+  timestamp       DateTime   @default(now())
+
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model Claim {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String     @db.ObjectId
+  claimAmount   Float
+  status        ClaimStatus
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  user          User       @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Retweet {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  postId     String   @db.ObjectId
+  createdAt  DateTime @default(now())
+
+  user       User     @relation("UserRetweets", fields: [userId], references: [id])
+  tweet      Post     @relation("PostRetweets", fields: [postId], references: [id])
+}
+
+model ChatGroup {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String?
+  iconUrl       String?
+  type          GroupType   @default(PRIVATE)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  lastMessageAt DateTime?
+  
+  creatorId     String      @db.ObjectId
+  creator       User        @relation("CreatedChatGroups", fields: [creatorId], references: [id])
+  
+  allowMedia    Boolean     @default(true)
+  maxFileSize   Int         @default(5242880)
+  isEncrypted   Boolean     @default(false)
+  
+  members       chatMember[]
+  messages      ChatMessage[]
+  
+  @@index([createdAt])
+  @@index([lastMessageAt])
+}
+
+model ChatMessage {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  groupId      String           @db.ObjectId
+  senderId     String           @db.ObjectId
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  isSystem     Boolean          @default(false)
+  isEncrypted  Boolean          @default(false)
+  iv           String?
+  
+  group        ChatGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  sender       User             @relation(fields: [senderId], references: [id])
+  contents     MessageContent[]
+  reactions    ChatReaction[]
+  
+  @@index([groupId, createdAt])
+  @@index([senderId])
+}
+
+model MessageContent {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  messageId   String        @db.ObjectId
+  type        ContentType
+  order       Int
+  content     String?
+  mediaUrl    String?
+  metadata    Json?
+  
+  message     ChatMessage   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  @@index([messageId, order])
+}
+
+model chatMember {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  groupId      String       @db.ObjectId
+  userId       String       @db.ObjectId
+  role         MemberRole   @default(MEMBER)
+  joinedAt     DateTime     @default(now())
+  lastReadAt   DateTime     @default(now())
+  
+  group        ChatGroup    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+  
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model ChatReaction {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  messageId    String       @db.ObjectId
+  userId       String       @db.ObjectId
+  emoji        String
+  createdAt    DateTime     @default(now())
+  
+  message      ChatMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+  
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+
+enum GroupType {
+  PUBLIC
+  PRIVATE
+  SECRET
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum ContentType {
+  TEXT
+  IMAGE
+  GIF
+  STICKER
+  LINK
+  CODE
+  SYSTEM
+}
+
+enum ChangeType {
+  CREDIT
+  DEBIT
+}
+
+enum ChangeReason {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  FEE
+  REWARD
+  REFUND
+  OTHER
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}

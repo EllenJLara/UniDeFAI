@@ -1,0 +1,10 @@
+model Coin {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  address   String   @unique // Unique crypto address
+  name      String? 
+  symbol    String?
+  image     String?
+  posts     Post[]   @relation("CoinPosts")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

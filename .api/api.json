@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "coinstatsopenapi",
+      "source": "@coinstatsopenapi/v1.0#dl82et21jlm53ttt5w",
+      "integrity": "sha512-M2eeVlTweEABNp2bSfsMaohueq4Aho/Mre1jDUWiS4ma/AXaM4X4eSfKumESeidb9uGa8jslWHNu9u9qBpMVuA==",
+      "installerVersion": "6.1.2"
+    },
+    {
+      "identifier": "pulsar",
+      "source": "@pulsar/v1.0#axdxcl3bm5ajjvi5",
+      "integrity": "sha512-YSWnJHdt6pqEU8ORjlKUbAcuk0PARQsHv00sDsfcKhbfq+ptdXzBOAm7xD+PFIzepNC3OVOpLwOlSFWQHjvoog==",
+      "installerVersion": "6.1.2"
+    }
+  ]
+}

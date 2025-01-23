@@ -1,0 +1,35 @@
+import Link from "next/link";
+import React from "react";
+import { TabsTrigger } from "../ui/tabs";
+import { motion } from "framer-motion";
+
+const NavigationTab = ({
+  text,
+  href,
+  active,
+}: {
+  text: string;
+  href: string;
+  active: boolean;
+}) => {
+  return (
+    <Link href={href} className="h-full hover:bg-zinc-500/10 w-full">
+     
+        <div className="h-full items-center flex justify-center cursor-pointer">
+          <TabsTrigger
+            aria-selected={active}
+            tabIndex={active ? 0 : -1}
+            value={text}
+            className={`rounded-none text-gray-100 text-base ${
+              active ? "border-b-pink-500 border-b-[3px] font-semibold  " : ""
+            }`}
+          >
+            {text}
+          </TabsTrigger>
+        </div>
+      
+    </Link>
+  );
+};
+
+export default NavigationTab;
