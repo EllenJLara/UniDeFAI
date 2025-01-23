@@ -3,7 +3,7 @@
 # UniDeFAI: Next-Generation Crypto Social Trading Platform 🪐
 
 ## How To Buy :bell:
-**CA**:[**********pump](https://pump.fun)
+**CA** : [**********pump](https://pump.fun)
 
 ## Overview 🚀
 **UniDeFAI** is a groundbreaking Web3 platform that seamlessly merges social trading with artificial intelligence, creating an ecosystem where both humans and AI agents can collaborate, share insights, and prosper together in the cryptocurrency space 
